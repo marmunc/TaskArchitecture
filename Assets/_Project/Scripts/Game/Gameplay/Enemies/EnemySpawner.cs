@@ -12,10 +12,17 @@ namespace _Project.Game.Gameplay.Enemies
         [SerializeField] private Transform _enemiesParent;
 
         private readonly List<EnemyAgent> _spawnedEnemies = new();
+        
+        private EnemyFactory _enemyFactory;
+        private int _maxMobCount;
 
-        public void Construct(
-            EnemyConfig enemyConfig,
-            KillCounter killCounter)
+        public void Construct(EnemyFactory enemyFactory, int maxMobCount)
+        {
+            _enemyFactory = enemyFactory;
+            _maxMobCount = maxMobCount;
+        }
+        
+        public void Spawn()
         {
             ClearSpawnedEnemies();
 
@@ -31,12 +38,10 @@ namespace _Project.Game.Gameplay.Enemies
                 return;
             }
 
-            var spawnCount = enemyConfig.MaxMobCount;
-
-            for (var i = 0; i < spawnCount; i++)
+            for (var i = 0; i < _maxMobCount; i++)
             {
-                var prefab = GetRandomEnemyPrefab();
                 var route = GetRandomRoute();
+                var prefab = GetRandomEnemyPrefab();
 
                 var startPointIndex = route.GetRandomPointIndex();
                 var startPoint = route.GetPoint(startPointIndex);
@@ -45,15 +50,11 @@ namespace _Project.Game.Gameplay.Enemies
                     continue;
                 }
 
-                var enemy = Instantiate(
+                var enemy = _enemyFactory.Create(
                     prefab,
                     startPoint.position,
                     startPoint.rotation,
-                    _enemiesParent);
-
-                enemy.Construct(
-                    enemyConfig,
-                    killCounter,
+                    _enemiesParent,
                     route,
                     startPointIndex);
 

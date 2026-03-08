@@ -43,6 +43,12 @@ namespace _Project.Game.Gameplay.Root
 
             _container.RegisterFactory(_ => new KillCounter())
                 .AsSingle();
+            
+            _container.RegisterFactory(c =>
+                    new EnemyFactory(
+                        _enemyConfig,
+                        c.Resolve<KillCounter>()))
+                .AsSingle();
         }
 
         private void BindSceneObjects()
@@ -51,10 +57,12 @@ namespace _Project.Game.Gameplay.Root
                 _playerConfig,
                 _inputManager,
                 _container.Resolve<TargetSelectionService>());
-
+            
             _enemySpawner.Construct(
-                _enemyConfig,
-                _container.Resolve<KillCounter>());
+                _container.Resolve<EnemyFactory>(),
+                _enemyConfig.MaxMobCount);
+
+            _enemySpawner.Spawn();
 
             _killCounterView.Construct(
                 _container.Resolve<KillCounter>());
